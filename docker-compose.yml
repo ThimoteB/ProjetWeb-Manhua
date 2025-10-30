@@ -1,5 +1,6 @@
 services:
   manhua-app:
+    container_name: manhua
     build:
       context: .
       dockerfile: Dockerfile
