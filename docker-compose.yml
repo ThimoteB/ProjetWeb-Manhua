@@ -17,11 +17,14 @@ services:
       - ./logs:/app/logs
     restart: unless-stopped
     networks:
-      - manhua-network
+      - manhua_network
+      - proxy_network
 
 networks:
-  manhua-network:
+  manhua_network:
     driver: bridge
+  proxy_network:
+    external: true
 
 volumes:
   manhua_data:
