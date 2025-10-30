@@ -1,0 +1,88 @@
+
+1
+
+Zoom automatique
+Sujet de projet
+ENSIIE FISA FC Bases du Web 2025-2026
+Le projet est votre  ́evaluation pour ce module. Vous devez le rendre au plus tard 14 jours apr`es
+la derni`ere s ́eance, `a 23h59. (Donc si la derni`ere s ́eance a lieu le 3 octobre, vous devez rendre votre
+projet au plus tard le 17 octobre 23h59.)
+Votre travail doit ˆetre archiv ́e dans un fichier nom prenom technologie.tar.gz. Cette archive
+doit contenir un seul dossier racine nomm ́e nom prenom technologie dans lequel se trouve tout
+le code de votre projet. Votre archive ne doit pas contenir directement les fichiers de code `a sa
+racine ! Cette archive doit ensuite ˆetre d ́epos ́ee sur http://exam.ensiie.fr dans le d ́epˆot nomm ́e
+bawe11-fisa-projet.
+1 Instructions
+1.1 Rendu
+Vous devez produire un petit site web comprenant :
+— une partie client avec au plus 15 fichiers non binaires ; et une partie en javascript.
+— une partie serveur avec au plus 10 fichiers non binaires.
+— une base de donn ́ees (si la base est relationnelle comme le SQL, elle doit contenir 2 ou 3
+tables ; si la base est non relationnelle elle doit contenir des donn ́ees de nature diff ́erentes)
+— un fichier rapport.pdf de 2 pages maximum (hors images).
+— un fichier README.txt ou README.md
+Le site ne peut contenir plus de fichiers ou de tables qu’indiqu ́e ci-dessus ; sauf si cela est justifi ́e
+par un choix de technologie (voir plus loin). Le site peut contenir d’autre types de fichiers (des
+m ́edias par exemple) mais la taille totale de l’archive rendue ne devra pas exc ́eder 3Mo. Si vos
+images sont trop grosses, r ́eduisez les.
+Le site doit contenir une zone titre et/ou menu qui doit apparaˆıtre en haut ou sur le cˆot ́e de
+chaque page ; et une zone cr ́edit et/ou contact qui doit apparaˆıtre en bas de chaque page.
+Chaque page du site doit contenir deux boutons :
+— un bouton pour traduire le site en anglais.
+— un bouton jour/nuit pour changer l’aspect de la page avec des couleurs claires ou des couleurs
+sombres. Ce changement d’aspect doit ˆetre dynamique (sans rechargement de la page).
+Le site doit contenir au moins 2 types de requˆetes `a la base de donn ́ees : requˆetage de type
+SELECT pour lire le contenu d’une ou plusieurs tables, et requˆetage de type UPDATE, INSERT ou
+DELETE pour modifier le contenu. Au moins une page du site doit permettre d’afficher un contenu
+qui d ́epend des donn ́ees de la base.
+Le sujet du site est libre (mais doit respecter la loi, le r`eglement int ́erieur de l’ ́ecole et la charte
+informatique de l’ ́ecole, bien entendu).
+1
+1.2 Technologies et nom de l’archive
+— Si votre niveau est d ́ebutant ou si vous n’avez jamais travaill ́e en PHP ou en SQL, vous devez
+produire votre site web avec les technologies suivantes : HTML/CSS/PHP/SQL/JS. Les 5
+technologies doivent ˆetre utilis ́ees. Votre nom d’archive doit alors ˆetre
+nom prenom standard.tar.gz .
+— Sinon le choix de la technologie est libre, mais il faut respecter les consignes. Votre nom
+d’archive doit refl ́eter la technologie principale. Si par exemple vous utilisez django : indiquez
+nom prenom django.tar.gz . Si votre technologie principale est un framework cˆot ́e client
+comme vuejs, indiquez nom prenom vuejs.tar.gz . Si vous utilisez plusieurs technologies
+non standards, vous pouvez les indiquer, mais il n’est pas n ́ecessaire de tout pr ́eciser dans le
+nom du fichier. L’id ́ee est juste de permettre de classer les projets en fonction des technologies
+utilis ́ees pour faciliter la correction.
+1.3 Rapport
+Le rapport doit faire deux pages maximum, sans tenir compte des images. Il doit contenir une
+capture d’ ́ecran de chaque page visitable sur le site, avec les modes fran ̧cais/anglais et jour/nuit.
+Dans ce rapport vous devez expliquer, dans cet ordre :
+— les technologies utilis ́ees. Vous pouvez ici justifier le d ́epassement en nombre de fichiers ou
+de tables.
+— succinctement, ce que fait votre site web et comment le manipuler, une sorte de petit manuel
+de votre site
+— un ou deux d ́etails techniques dans le code ; par exemple si vous avez rencontr ́e une difficult ́e,
+vous pouvez l’expliquer ici et comment vous l’avez surmont ́ee ; si vous aviez plusieurs choix
+pour un mˆeme rendu, comment avez vous fait ce choix ; . . .
+1.4 README
+Si vous avez utilis ́e les technologies HTML/CSS/PHP/SQL/JS, ajoutez un fichier pour cr ́eer
+la base de donn ́ees initiale. Ce fichier peut ˆetre cr ́e ́e avec un dump de la base. Vous pouvez par
+exemple regarder la commande pg dump en postgreySQL. Sinon, vous pouvez cr ́eer vous mˆeme un
+fichier SQL contenant les requˆetes n ́ecessaires pour la cr ́eation de la base et son remplissage initial.
+Le README doit juste indiquer o`u trouver ce fichier.
+Si vous avez utilis ́e une technologie autre que HTML/CSS/PHP/SQL/JS. Le fichier README doit
+expliquer comment d ́emarrer le serveur web en situation de d ́eveloppement (inutile d’aller jusqu’en
+situation de production). Toutes les  ́etapes doivent ˆetre d ́ecrites entre le t ́el ́echargement des fichiers
+et le moment o`u une page web s’affiche `a l’ ́ecran. Votre site ne doit pas n ́ecessiter d’installer trop de
+technologies. Le site doit pouvoir tourner sur une machine simple qui n’a pas de grosses ressources.
+Si les  ́etapes sont trop lourdes (s’il faut par exemple installer docker ou anaconda pour d ́emarrer
+facilement le site web), vous pouvez proposer si vous en avez les ressources une version en ligne
+de votre site web qui peut ˆetre visit ́ee. Si ce n’est pas possible, essayez de simplifier l’installation
+minimale.
+2 Barˆeme
+Le barˆeme est le suivant :
+— Non-respect des consignes du nombre maximum de fichiers, de tables, de pages ou de la taille
+maximum de l’archive ou en cas d’absence des fichiers rapports et readme) : p ́enalit ́e de 20
+points.
+— Pr ́esence d’une partie client avec fichier de style : 1 point
+— Pr ́esence d’une partie serveur : 1 point
+— Pr ́esence d’une base de donn ́ees : 1 point
+— Pr ́esence de javascript : 1 point
+2

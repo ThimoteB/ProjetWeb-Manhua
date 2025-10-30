@@ -1,0 +1,61 @@
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Node dependencies
+node_modules
+
+# Logs
+logs
+*.log
+
+# Misc
+.DS_Store
+.fleet
+.idea
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+# MacOS
+*.DS_Store
+.AppleDouble
+.LSOverride
+
+# Database files (SQLite)
+*.db
+*.sqlite
+*.sqlite3
+/server/data/
+
+# Docker
+.dockerignore
+
+# IDE
+.vscode/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+ehthumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Coverage reports
+coverage/
+*.lcov
+
+# TypeScript
+*.tsbuildinfo
+
+# PNPM
+.pnpm-debug.log*
