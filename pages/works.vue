@@ -217,6 +217,10 @@ Page catalogue des œuvres :
 </template>
 
 <script setup lang="ts">
+// Script principal de la page catalogue :
+// - Gère la récupération, le filtrage et la pagination des œuvres
+// - Permet l'ajout/suppression d'œuvres (admin)
+// - Gère l'ajout/retrait dans la bibliothèque utilisateur
 import { computed, reactive, ref } from "vue";
 import { useAppSession } from "~/composables/useAppSession";
 

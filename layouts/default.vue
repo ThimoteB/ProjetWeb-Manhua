@@ -66,6 +66,9 @@
 </template>
 
 <script setup lang="ts">
+// Script principal du layout par défaut :
+// - Gère l'affichage du header, du footer et la navigation principale
+// - Permet la gestion de la session utilisateur et du logout
 import { computed, onMounted, ref } from "vue";
 
 const route = useRoute();

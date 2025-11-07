@@ -153,6 +153,9 @@ Page bibliothèque de l'utilisateur :
 </template>
 
 <script setup lang="ts">
+// Script principal de la page bibliothèque :
+// - Gère l'affichage, l'édition et la suppression des entrées de la bibliothèque
+// - Permet la gestion des statuts, notes et avis sur les œuvres suivies
 import { computed, reactive, ref } from "vue";
 import { useAppSession } from "~/composables/useAppSession";
 

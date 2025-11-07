@@ -76,8 +76,8 @@ Je me suis appuyé sur de l'IA pour la génération de certains commentaires et 
 
 ## Conclusion
 
-Ce projet à été l'occasion pour moi de vraiment mettre en application un projet fullback entièrement seule, de la conception du backend à l'interface utilisateur, en passant par la gestion de la base de données et la sécurité. J'ai pu approfondir mes compétences en Vue.js, Nuxt.js, Tailwind CSS tout en respectant les bonnes pratiques de développement web.
-Je sais que certains points aurait encore pu être améliorés, mais je suis satisfait du résultat que j'ai réussi à obtenir en y passant quelques weekends de mon temps libre.
+Ce projet a été l'occasion pour moi de vraiment mettre en application un projet fullstack entièrement seul, de la conception du backend à l'interface utilisateur, en passant par la gestion de la base de données et la sécurité. J'ai pu approfondir mes compétences en Vue.js, Nuxt.js, Tailwind CSS tout en respectant les bonnes pratiques de développement web.
+Je sais que certains points auraient encore pu être améliorés, mais je suis satisfait du résultat que j'ai réussi à obtenir en y passant quelques weekends de mon temps libre.
 
 ## Contact
 

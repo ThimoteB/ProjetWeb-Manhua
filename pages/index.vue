@@ -13,7 +13,7 @@ Page d'accueil du site :
 					<h1 class="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
 						{{ t("home.heroTitle") }}
 					</h1>
-					
+
 					<p class="text-lg text-gray-700 dark:text-gray-300 max-w-2xl">
 						{{ t("home.heroSubtitle") }}
 					</p>
@@ -185,6 +185,9 @@ Page d'accueil du site :
 </template>
 
 <script setup lang="ts">
+// Script principal de la page d'accueil :
+// - Gère l'affichage des statistiques, la connexion et l'inscription
+// - Permet le changement d'onglet et la récupération des œuvres mises en avant
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useAppSession } from "~/composables/useAppSession";
 

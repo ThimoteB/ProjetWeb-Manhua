@@ -60,7 +60,7 @@ const clearSessionByTokenStmt = db.prepare<[string]>(
 	"UPDATE users SET session_token = NULL, session_expires_at = NULL WHERE session_token = ?"
 );
 
-// Cette fonction retire les champs sensibles (session_token) d'un DbUserRow
+// Retire les champs sensibles (token, expiration) pour exposer un utilisateur côté front
 function sanitizeUser(row: DbUserRow): DbUser {
 	return {
 		id: row.id,
@@ -71,7 +71,7 @@ function sanitizeUser(row: DbUserRow): DbUser {
 	};
 }
 
-// Récupère le token de session depuis le cookie ou le header
+// Récupère le token de session depuis le cookie ou le header (utilisé pour authentifier l'utilisateur)
 function getSessionToken(event: H3Event): string | null {
 	const cookieToken = getCookie(event, SESSION_COOKIE);
 	if (cookieToken) return cookieToken;
@@ -83,7 +83,7 @@ function getSessionToken(event: H3Event): string | null {
 	return headerValue ?? null;
 }
 
-// Récupère l'utilisateur courant selon le token de session
+// Retourne l'utilisateur courant si le token de session est valide, sinon null
 export function getCurrentUser(event: H3Event): DbUser | null {
 	const token = getSessionToken(event);
 	if (token) {
@@ -105,7 +105,7 @@ export function getCurrentUser(event: H3Event): DbUser | null {
 	return null;
 }
 
-// Dans le front, permet d'assurer qu'un user est authentifié
+// Lance une erreur si aucun utilisateur n'est authentifié (utilisé pour sécuriser les endpoints)
 export function requireUser(event: H3Event): DbUser {
 	const user = getCurrentUser(event);
 	if (!user) {
@@ -114,7 +114,7 @@ export function requireUser(event: H3Event): DbUser {
 	return user;
 }
 
-// Dans le front, permet d'assurer qu'un user est admin
+// Lance une erreur si l'utilisateur n'est pas admin (sécurise les routes admin)
 export function requireAdmin(event: H3Event): DbUser {
 	const user = requireUser(event);
 	if (user.is_admin !== 1) {
@@ -123,7 +123,7 @@ export function requireAdmin(event: H3Event): DbUser {
 	return user;
 }
 
-// Vérifie que l'user est bien le priopriétaire de la ressource ou un admin
+// Vérifie que l'utilisateur est soit le propriétaire de la ressource, soit admin
 export function assertOwnerOrAdmin(event: H3Event, ownerId: number): DbUser {
 	const user = requireUser(event);
 	if (user.id !== ownerId && user.is_admin !== 1) {
