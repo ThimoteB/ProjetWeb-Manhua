@@ -68,8 +68,10 @@
 						<div class="flex-1 space-y-3">
 							<div class="flex items-start gap-2">
 								<div class="flex-1 space-y-1">
-									<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ work.title }}</h3>
-									<p v-if="work.originalTitle" class="text-sm text-gray-500 dark:text-gray-400">
+									<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 min-h-[2.8rem]">
+										{{ work.title }}
+									</h3>
+									<p v-if="work.originalTitle" class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 min-h-[2.2rem]">
 										{{ work.originalTitle }}
 									</p>
 									<p class="text-xs font-medium uppercase tracking-wide text-emerald-600">
@@ -91,7 +93,7 @@
 									</ClientOnly>
 								</div>
 							</div>
-							<p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-4">
+							<p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-4 h-[5.2rem] overflow-hidden break-words whitespace-pre-line">
 								{{ work.synopsis || "" }}
 							</p>
 						</div>
@@ -99,12 +101,13 @@
 					<div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
 						<div>
 							<span class="font-medium text-emerald-600">{{ t("works.averageRating") }}</span>
+							<span>&nbsp;</span>
 							<span v-if="work.avgRating">{{ work.avgRating }}/10 ({{ work.ratingCount }})</span>
 							<span v-else>—</span>
 						</div>
 						<div>
 							<span class="font-medium text-emerald-600">{{ t("works.entries") }}</span>
-							<span>{{ work.entryCount }}</span>
+							<span>&nbsp;{{ work.entryCount }}</span>
 						</div>
 					</div>
 					<ClientOnly>

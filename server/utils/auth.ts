@@ -1,3 +1,10 @@
+/*
+auth.ts
+Ce fichier centralise la gestion de l'authentification et des sessions côté backend.
+Il fournit des fonctions utilitaires pour récupérer l'utilisateur courant, vérifier les rôles des users,
+créer et détruire les sessions, et manipuler les cookies de session.
+*/
+
 import {
 	createError,
 	deleteCookie,
@@ -22,7 +29,12 @@ type DbUserRow = DbUser & {
 };
 
 const SESSION_COOKIE = "manhua_session";
-const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 7; 
+const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 7; // 1 semaine
+
+/*
+Préparation des différents statements SQL utiles 
+Plus tard il suffira de les appeler avec .get() / .run() / .all() avec des datas
+*/
 
 const getUserByIdStmt = db.prepare<[number], DbUser>(
 	"SELECT id, username, email, is_admin, created_at FROM users WHERE id = ?"
@@ -48,6 +60,7 @@ const clearSessionByTokenStmt = db.prepare<[string]>(
 	"UPDATE users SET session_token = NULL, session_expires_at = NULL WHERE session_token = ?"
 );
 
+// Cette fonction retire les champs sensibles (session_token) d'un DbUserRow
 function sanitizeUser(row: DbUserRow): DbUser {
 	return {
 		id: row.id,
@@ -58,6 +71,7 @@ function sanitizeUser(row: DbUserRow): DbUser {
 	};
 }
 
+// Récupère le token de session depuis le cookie ou le header
 function getSessionToken(event: H3Event): string | null {
 	const cookieToken = getCookie(event, SESSION_COOKIE);
 	if (cookieToken) return cookieToken;
@@ -69,6 +83,7 @@ function getSessionToken(event: H3Event): string | null {
 	return headerValue ?? null;
 }
 
+// Récupère l'utilisateur courant selon le token de session
 export function getCurrentUser(event: H3Event): DbUser | null {
 	const token = getSessionToken(event);
 	if (token) {
@@ -90,6 +105,7 @@ export function getCurrentUser(event: H3Event): DbUser | null {
 	return null;
 }
 
+// Dans le front, permet d'assurer qu'un user est authentifié
 export function requireUser(event: H3Event): DbUser {
 	const user = getCurrentUser(event);
 	if (!user) {
@@ -98,6 +114,7 @@ export function requireUser(event: H3Event): DbUser {
 	return user;
 }
 
+// Dans le front, permet d'assurer qu'un user est admin
 export function requireAdmin(event: H3Event): DbUser {
 	const user = requireUser(event);
 	if (user.is_admin !== 1) {
@@ -106,6 +123,7 @@ export function requireAdmin(event: H3Event): DbUser {
 	return user;
 }
 
+// Vérifie que l'user est bien le priopriétaire de la ressource ou un admin
 export function assertOwnerOrAdmin(event: H3Event, ownerId: number): DbUser {
 	const user = requireUser(event);
 	if (user.id !== ownerId && user.is_admin !== 1) {
@@ -114,6 +132,7 @@ export function assertOwnerOrAdmin(event: H3Event, ownerId: number): DbUser {
 	return user;
 }
 
+// Créee la session pour un user et set le cookie de session et enregistre en BDD
 export function createSession(event: H3Event, userId: number) {
 	const token = randomBytes(32).toString("hex");
 	const expiresAt = new Date(Date.now() + SESSION_DURATION_MS).toISOString();
@@ -128,6 +147,7 @@ export function createSession(event: H3Event, userId: number) {
 	return token;
 }
 
+// Détruit la session en nettoyant le cookie et la BDD
 export function destroySession(event: H3Event, userId?: number) {
 	const token = getSessionToken(event);
 	if (token) {

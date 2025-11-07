@@ -30,7 +30,7 @@
 		"refresh": "Refresh"
 	},
 	"home": {
-		"heroTitle": "Your central manhua diary",
+		"heroTitle": "Your favorite manhua collection",
 		"heroSubtitle": "Browse the catalog, track your reading and share quick reviews.",
 		"loginTitle": "Log in",
 		"registerTitle": "Create an account",
@@ -89,6 +89,7 @@
 		"subtitle": "Track your reading progress and reviews.",
 		"loginPrompt": "Log in to access your library.",
 		"empty": "Your library is empty for now.",
+		"userStatus": "Status",
 		"progress": "Progress",
 		"rating": "Rating",
 		"review": "Review",

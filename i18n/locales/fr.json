@@ -30,8 +30,8 @@
 		"refresh": "Actualiser"
 	},
 	"home": {
-		"heroTitle": "Votre liste de manhua centralisé",
-		"heroSubtitle": "Parcourez le catalogue, suivez vos lectures et partagez vos avis en toute simplicité.",
+		"heroTitle": "Votre collection de manhua préférée",
+		"heroSubtitle": "Parcourez le catalogue, suivez vos lectures et partagez vos avis.",
 		"loginTitle": "Connexion",
 		"registerTitle": "Créer un compte",
 		"identifier": "Nom d'utilisateur ou email",
@@ -49,14 +49,14 @@
 		"statsWorks": "Titres disponibles",
 		"statsLibrary": "Entrées dans les bibliothèques",
 		"statsUsers": "Membres inscrits",
-		"switchToRegister": "Pas encore de compte ? Créez-en un en un clic.",
+		"switchToRegister": "Pas encore de compte ? Inscrivez-vous.",
 		"switchToLogin": "Déjà inscrit·e ? Connectez-vous.",
 		"tabLogin": "Connexion",
 		"tabRegister": "Inscription"
 	},
 	"about": {
 		"title": "À propos",
-		"description": "Ce projet a été développé dans le cadre du cours 'Bases du Web' à l'ENSIIE.",
+		"description": "Ce projet a été développé dans le cadre du cours de Bases du Web à l'ENSIIE.",
 		"technologies": "Technologies utilisées",
 		"features": "Fonctionnalités",
 		"architecture": "Architecture du projet"
@@ -100,6 +100,7 @@
 		"subtitle": "Suivez vos lectures et partagez vos impressions.",
 		"loginPrompt": "Connectez-vous pour accéder à votre bibliothèque.",
 		"empty": "Votre bibliothèque est vide pour le moment.",
+		"userStatus": "Statut",
 		"progress": "Progression",
 		"rating": "Note",
 		"review": "Avis",

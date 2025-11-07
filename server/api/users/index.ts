@@ -1,3 +1,13 @@
+
+/*
+index.ts
+Ce fichier gère les opérations principales sur les utilisateurs :
+- Récupération paginée et filtrée (GET)
+- Création d'un nouvel utilisateur (POST, admin uniquement)
+Les paramètres de recherche (username, email, pagination) sont extraits de la query string.
+Le mot de passe est hashé à la création.
+*/
+
 import bcrypt from "bcryptjs";
 import { createError, defineEventHandler, getQuery, readBody } from "h3";
 import type { H3Event } from "h3";

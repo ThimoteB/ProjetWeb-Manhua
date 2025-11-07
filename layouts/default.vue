@@ -6,7 +6,7 @@
 					to="/"
 					class="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-gray-100"
 				>
-					<span>MyManhua Diary</span>
+					<span>MyManhuaList</span>
 				</NuxtLink>
 
 				<nav class="flex-1 flex flex-wrap items-center gap-2 text-sm">
@@ -51,7 +51,7 @@
 			<div class="max-w-6xl mx-auto px-4 py-6 text-sm text-gray-600 dark:text-gray-300 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
 				<div>
 					<strong class="font-medium text-gray-800 dark:text-gray-100">{{ t("footer.credits") }}</strong>
-					<p class="mt-1">MyManhua Diary · {{ t("footer.school") }}</p>
+					<p class="mt-1">Raku · {{ t("footer.school") }}</p>
 				</div>
 				<div>
 					<strong class="font-medium text-gray-800 dark:text-gray-100">{{ t("footer.contact") }}</strong>

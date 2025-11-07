@@ -3,6 +3,17 @@ export default defineNuxtConfig({
 	compatibilityDate: "2024-04-03",
 	devtools: { enabled: true },
 
+	// APP 
+
+	app: {
+	head: {
+	  title: 'MyManhuaList',
+	  link: [
+		{ rel: 'icon', type: 'image/x-icon', href: '/icons/favicon.ico' },
+	  ],
+	},
+  },
+
 	// Modules
 	modules: ["@nuxtjs/tailwindcss", "@nuxtjs/i18n", "@nuxtjs/color-mode"],
 

@@ -1,3 +1,13 @@
+
+/*
+[id].ts
+Ce fichier gère les opérations sur un utilisateur individuel (GET, PATCH/PUT, DELETE).
+L'identifiant de l'utilisateur est récupéré automatiquement via le nom du fichier ([id].ts) grâce au système de routing de Nuxt/Nitro :
+	- L'URL /api/users/42 va injecter 42 dans event.context.params.id
+Certaines opérations nécessitent d'être admin, d'autres autorisent le propriétaire ou un admin.
+Le mot de passe est hashé lors de la modification.
+*/
+
 import bcrypt from "bcryptjs";
 import { createError, defineEventHandler, readBody } from "h3";
 import type { H3Event } from "h3";

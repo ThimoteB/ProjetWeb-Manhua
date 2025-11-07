@@ -62,6 +62,10 @@
 
 						<div v-if="editingEntryId !== entry.id" class="space-y-3 text-sm text-gray-600 dark:text-gray-300">
 							<p>
+								<strong>{{ t("library.userStatus") }}:</strong>
+								{{ t(`statuses.${entry.status}`) }}
+							</p>
+							<p>
 								<strong>{{ t("library.progress") }}:</strong>
 								{{ entry.progress }}
 							</p>
@@ -71,6 +75,7 @@
 							</p>
 							<p>
 								<strong>{{ t("library.review") }}:</strong>
+								<span>&nbsp;</span>
 								<span>{{ entry.review || "—" }}</span>
 							</p>
 						</div>
