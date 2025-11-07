@@ -1,3 +1,8 @@
+/*
+register.post.ts
+Endpoint POST pour l'inscription d'un nouvel utilisateur.
+Vérifie la validité des champs, hash le mot de passe, crée la session.
+*/
 import bcrypt from "bcryptjs";
 import { createError, defineEventHandler, readBody } from "h3";
 import db from "../../utils/db";

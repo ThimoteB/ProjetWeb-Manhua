@@ -1,3 +1,9 @@
+/*
+index.ts
+Endpoint GET pour récupérer la bibliothèque d'un utilisateur (liste des œuvres suivies).
+Endpoint POST pour ajouter une œuvre à la bibliothèque.
+Vérifie les droits d'accès (admin ou propriétaire).
+*/
 import { createError, defineEventHandler, getQuery, readBody } from "h3";
 import type { H3Event } from "h3";
 import db from "../../utils/db";

@@ -1,3 +1,10 @@
+<!--
+library.vue
+Page bibliothèque de l'utilisateur :
+- Affiche les œuvres suivies
+- Permet d'éditer, supprimer ou ajouter des entrées
+- Gestion des statuts, notes et avis
+-->
 <template>
 	<div class="max-w-6xl mx-auto px-4 py-12 space-y-10">
 		<header class="space-y-3">
@@ -13,6 +20,7 @@
 			<div v-if="!currentUser" class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-950/70 p-6 text-center text-gray-600 dark:text-gray-300">
 				{{ t("library.loginPrompt") }}
 			</div>
+
 			<div v-else class="space-y-6">
 				<div class="flex items-center justify-between">
 					<NuxtLink to="/works" class="btn-secondary text-sm">{{ t("home.ctaCatalog") }}</NuxtLink>

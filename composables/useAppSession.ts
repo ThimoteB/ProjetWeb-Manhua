@@ -1,3 +1,10 @@
+/*
+useAppSession.ts
+Composable centralisant la gestion de la session utilisateur côté front :
+- Stocke l'utilisateur courant, l'état de chargement, les erreurs
+- Fournit les méthodes login, register, logout, refresh
+- Gère la récupération et la normalisation des erreurs
+*/
 import type { Ref } from "vue";
 
 export type SessionUser = {

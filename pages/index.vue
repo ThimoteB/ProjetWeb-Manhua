@@ -1,3 +1,10 @@
+<!--
+index.vue
+Page d'accueil du site :
+- Affiche le titre, le sous-titre, les statistiques (œuvres, bibliothèque, utilisateurs)
+- Propose l'accès au catalogue, à la bibliothèque, et à l'authentification (login/register)
+- Met en avant les dernières œuvres ajoutées
+-->
 <template>
 	<div>
 		<section class="bg-gradient-to-br from-emerald-500/10 via-white dark:via-gray-950 to-transparent">
@@ -6,6 +13,7 @@
 					<h1 class="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
 						{{ t("home.heroTitle") }}
 					</h1>
+					
 					<p class="text-lg text-gray-700 dark:text-gray-300 max-w-2xl">
 						{{ t("home.heroSubtitle") }}
 					</p>

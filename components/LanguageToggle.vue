@@ -1,3 +1,9 @@
+<!--
+LanguageToggle.vue
+Composant bouton pour changer la langue de l'interface (français/anglais).
+Affiche le drapeau correspondant à la langue cible.
+Utilise useI18n pour gérer le changement de langue.
+-->
 <template>
 	<button
 		@click="switchLanguage"

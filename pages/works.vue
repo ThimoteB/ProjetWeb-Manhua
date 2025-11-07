@@ -1,3 +1,10 @@
+<!--
+works.vue
+Page catalogue des œuvres :
+- Recherche, filtrage par statut, pagination
+- Ajout et suppression d'œuvres (admin)
+- Ajout/retrait dans la bibliothèque utilisateur
+-->
 <template>
 	<div class="max-w-6xl mx-auto px-4 py-12 space-y-10">
 		<header class="space-y-3">
@@ -13,6 +20,7 @@
 			<form class="grid gap-4 md:grid-cols-[2fr,1fr,auto] items-end" @submit.prevent>
 				<label class="flex flex-col gap-2">
 					<span class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ t("common.search") }}</span>
+
 					<input
 						v-model="search"
 						type="search"

@@ -1,3 +1,9 @@
+/*
+login.post.ts
+Endpoint POST pour la connexion utilisateur.
+Permet de s'authentifier via username ou email + mot de passe.
+Crée la session si les identifiants sont valides.
+*/
 import bcrypt from "bcryptjs";
 import { createError, defineEventHandler, readBody } from "h3";
 import db from "../../utils/db";

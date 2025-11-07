@@ -1,3 +1,9 @@
+/*
+[id].ts
+Endpoint pour accéder/modifier/supprimer une entrée précise de la bibliothèque.
+L'id de l'entrée est injecté via le nom du fichier ([id].ts) grâce au routing Nuxt/Nitro.
+Vérifie les droits d'accès (admin ou propriétaire).
+*/
 import { createError, defineEventHandler, readBody } from "h3";
 import type { H3Event } from "h3";
 import db from "../../utils/db";

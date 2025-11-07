@@ -1,3 +1,10 @@
+<!--
+admin.vue
+Page d'administration réservée aux admins :
+- Création d'utilisateurs
+- Recherche et gestion des utilisateurs
+- Pagination et affichage des rôles
+-->
 <template>
 	<div class="max-w-6xl mx-auto px-4 py-12 space-y-10">
 		<header class="space-y-3">
@@ -13,6 +20,7 @@
 			<div v-if="!canAccess" class="rounded-2xl border border-red-200 dark:border-red-900 bg-red-50/80 dark:bg-red-950/40 p-6 text-sm text-red-700 dark:text-red-200">
 				{{ t("admin.restricted") }}
 			</div>
+
 			<div v-else class="space-y-8">
 				<section class="rounded-2xl border border-emerald-200/60 dark:border-emerald-900/60 bg-emerald-50/80 dark:bg-emerald-950/60 p-6 shadow-lg">
 					<h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ t("admin.createTitle") }}</h2>
