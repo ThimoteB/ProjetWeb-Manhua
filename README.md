@@ -60,6 +60,15 @@ Ce projet est un site web de gestion de bibliothèque de manhua, réalisé dans 
 
 ---
 
+## Contrainte techniques et Technologies utilisées
+
+- **Frontend** : Vue.js 3, Nuxt.js, Tailwind CSS
+- **Backend** : Node.js avec Nuxt.js (API routes)
+- **Base de données** : BetterSqlite3
+- **Authentification** : Sessions avec cookies sécurisés
+
+Je n'ai pas pu respecté la concrainte de 10 fichiers backends maximum à cause du fonctionnement des API routes de Nuxt.js. En faite la structure de l'api passe par la strucutre du dossier `pages/api/` et chaque route doit être dans un fichier séparé selon le fait qu'on utilise des paramètres dynamiques ou non.
+
 ## Utilisation de l'IA
 
 Je me suis appuyé sur de l'IA pour la génération de certains commentaires et principalement au niveau des classes Tailwind CSS qui sont un vrai enfer à gérer.
@@ -71,4 +80,5 @@ Ce projet à été l'occasion pour moi de vraiment mettre en application un proj
 Je sais que certains points aurait encore pu être améliorés, mais je suis satisfait du résultat que j'ai réussi à obtenir en y passant quelques weekends de mon temps libre.
 
 ## Contact
+
 Pour toute question ou problème, contactez : thimote.bois@ensiie.eu
