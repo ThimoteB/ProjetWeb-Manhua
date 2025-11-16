@@ -6,7 +6,7 @@ Ce projet est un site web de gestion de bibliothèque de manhua, réalisé dans 
 
 ## Minimales requises
 
-- Node.js v16 ou supérieur
+- Node.js v18 ou supérieure
 
 ## Installation et lancement
 

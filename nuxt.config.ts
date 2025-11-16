@@ -59,7 +59,7 @@ export default defineNuxtConfig({
 	// Configuration TypeScript
 	typescript: {
 		strict: true,
-		typeCheck: true,
+		typeCheck: false, // Désactivé temporairement à cause d'un bug avec vite-plugin-checker et Node.js v22
 	},
 
 	// Configuration Nitro pour Docker + better-sqlite3

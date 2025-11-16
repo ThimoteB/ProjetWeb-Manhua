@@ -28,13 +28,12 @@ db.pragma("journal_mode = WAL");
 db.pragma("foreign_keys = ON");
 
 db.exec(`
-// Création des tables principales (users, works, library_entries)
 CREATE TABLE IF NOT EXISTS users (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	username TEXT NOT NULL UNIQUE,
 	email TEXT UNIQUE,
 	is_admin INTEGER NOT NULL DEFAULT 0 CHECK (is_admin IN (0, 1)),
-	password_hash TEXT, -- Stockage sécurisé du mot de passe
+	password_hash TEXT,
 	session_token TEXT,
 	session_expires_at TEXT,
 	created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -44,7 +43,7 @@ CREATE TABLE IF NOT EXISTS works (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	title TEXT NOT NULL,
 	original_title TEXT,
-	status TEXT NOT NULL DEFAULT 'ongoing' CHECK (status IN ('ongoing', 'completed', 'hiatus')), -- Statut de l'œuvre
+	status TEXT NOT NULL DEFAULT 'ongoing' CHECK (status IN ('ongoing', 'completed', 'hiatus')),
 	cover_url TEXT,
 	synopsis TEXT,
 	created_by INTEGER,
@@ -57,7 +56,7 @@ CREATE TABLE IF NOT EXISTS library_entries (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	user_id INTEGER NOT NULL,
 	work_id INTEGER NOT NULL,
-	status TEXT NOT NULL DEFAULT 'planning' CHECK (status IN ('planning', 'reading', 'completed', 'on_hold', 'dropped')), -- Statut de lecture dans la bibliothèque
+	status TEXT NOT NULL DEFAULT 'planning' CHECK (status IN ('planning', 'reading', 'completed', 'on_hold', 'dropped')),
 	progress INTEGER NOT NULL DEFAULT 0,
 	rating INTEGER CHECK (rating BETWEEN 1 AND 10),
 	review TEXT,
@@ -88,7 +87,6 @@ if (!userCountRow || userCountRow.count === 0) {
 	);
 
 	insertWork.run(
-		// Ajout d'œuvres de démonstration à la base
 		"Solo Leveling",
 		"na honjaman level up",
 		"completed",
