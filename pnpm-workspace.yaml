@@ -1,4 +1,9 @@
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - better-sqlite3
+  - cpu-features
   - esbuild
+  - fsevents
+  - node-sass
+  - phantomjs-prebuilt
+  - ssh2
