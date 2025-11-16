@@ -25,7 +25,7 @@ Ce projet est un site web de gestion de bibliothèque de manhua, réalisé dans 
 - Affichage responsive et moderne
 - Sécurité basique (sessions, rôles)
 
-## Installation rapide
+## Installation
 
 1. **Installer [pnpm](https://pnpm.io/)** (si ce n'est pas déjà fait) :
    ```sh
@@ -40,6 +40,9 @@ Ce projet est un site web de gestion de bibliothèque de manhua, réalisé dans 
    cp .env.example .env
    ```
    (définiser les 2 mots de passe des comptes par défaut)
+   Sinon les valeurs par défaut sont :
+   - admin : `admin123`
+   - reader : `reader123`
 4. **Lancer le serveur en mode développement** :
    ```sh
    pnpm run dev
@@ -81,4 +84,4 @@ Je sais que certains points auraient encore pu être améliorés, mais je suis s
 
 ## Contact
 
-Pour toute question ou problème, contactez : thimote.bois@ensiie.eu
+Pour toute question ou problème, contactez moi : thimote.bois@ensiie.eu
