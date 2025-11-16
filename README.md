@@ -46,7 +46,7 @@ Ce projet est un site web de gestion de bibliothèque de manhua, réalisé dans 
 Une version du site web est hébergée sur mon serveur personnel : [https://manhua.thimotebois.ovh](https://manhua.thimotebois.ovh)
 Un compte admin est à dispotion :
 
-- Username : correction
+- Username : corrrection
 - Password : correction
 
 ## Rapport
