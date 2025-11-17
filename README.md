@@ -46,23 +46,6 @@ Ce projet est un site web de gestion de bibliothèque de manhua, réalisé dans 
 **La base de données SQLite est créée et remplie automatiquement au premier lancement.**
 **Aucun dump SQL ou manipulation manuelle n'est nécessaire.**
 
-## Migration depuis pnpm/better-sqlite3
-
-Si vous aviez une ancienne version du projet avec pnpm et better-sqlite3 :
-
-```sh
-# Supprimer les anciens fichiers
-rm -rf node_modules pnpm-lock.yaml pnpm-workspace.yaml
-
-# Installer avec npm
-npm install
-
-# Relancer le projet
-npm run dev
-```
-
-**Note :** Le projet a été migré de `better-sqlite3` vers `sqlite3` et de `pnpm` vers `npm` pour résoudre les problèmes de compatibilité.
-
 ---
 
 Une version du site web est hébergée sur mon serveur personnel : [https://manhua.thimotebois.ovh](https://manhua.thimotebois.ovh)
