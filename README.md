@@ -4,88 +4,64 @@ Ce projet est un site web de gestion de bibliothèque de manhua, réalisé dans 
 
 **Toutes les étapes d'installation et de lancement sont détaillées ci-dessous.**
 
-## Minimales requises
+## Prérequis
 
-- **Node.js v22** (requis - incompatibilités connues avec v25 et autres versions)
-- pnpm (gestionnaire de paquets)
+- **Node.js** (version 22 ou supérieure recommandée)
+- npm (inclus avec Node.js)
 
 ## Installation et lancement
 
-1. **Installer Node.js v22 :**
+1. **Installer Node.js :**
 
-   Il est recommandé d'utiliser [nvm](https://github.com/nvm-sh/nvm) pour gérer les versions de Node.js :
+   Télécharger depuis [nodejs.org](https://nodejs.org/) ou utiliser [nvm](https://github.com/nvm-sh/nvm) :
 
    ```sh
-   # Installer nvm (si pas déjà installé)
-   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-
-   # Installer et utiliser Node.js v22
+   # Avec nvm (optionnel)
    nvm install 22
    nvm use 22
-
-   # Vérifier la version
-   node -v  # Doit afficher v22.x.x
    ```
 
-   Alternative sans nvm : télécharger depuis [nodejs.org](https://nodejs.org/) (version 22.x LTS)
-
-2. Installer [pnpm](https://pnpm.io/) si besoin :
+2. Installer les dépendances :
    ```sh
-   npm install -g pnpm
+   npm install
    ```
-3. Installer les dépendances :
-   ```sh
-   pnpm install
-   ```
-4. Copier le fichier d'exemple d'environnement :
+3. Copier le fichier d'exemple d'environnement :
 
    ```sh
    cp .env.example .env
    ```
 
-   (Définir les mots de passe des comptes par défaut si besoin)
-   (Par défaut :
+   Comptes par défaut :
 
    - Admin : admin / admin123
    - Reader : reader / reader123
-     )
 
-5. Lancer le serveur en mode développement :
+4. Lancer le serveur en mode développement :
    ```sh
-   pnpm run dev
+   npm run dev
    ```
-6. Accéder au site :
+5. Accéder au site :
    Ouvrir [http://localhost:3000](http://localhost:3000) dans votre navigateur.
 
 **La base de données SQLite est créée et remplie automatiquement au premier lancement.**
 **Aucun dump SQL ou manipulation manuelle n'est nécessaire.**
 
-## Problèmes courants
+## Migration depuis pnpm/better-sqlite3
 
-### ⚠️ Erreurs avec Node.js v25 ou autres versions
-
-Ce projet nécessite **Node.js v22** en raison de problèmes de compatibilité avec `better-sqlite3` et d'autres dépendances natives.
-
-**Symptômes :**
-
-- Erreurs lors de `pnpm install`
-- Échec de compilation de `better-sqlite3`
-- Erreurs `node-gyp`
-
-**Solution :**
+Si vous aviez une ancienne version du projet avec pnpm et better-sqlite3 :
 
 ```sh
-# Vérifier votre version Node.js
-node -v
+# Supprimer les anciens fichiers
+rm -rf node_modules pnpm-lock.yaml pnpm-workspace.yaml
 
-# Si ce n'est pas v22.x.x, installer Node.js v22 avec nvm
-nvm install 22
-nvm use 22
+# Installer avec npm
+npm install
 
-# Nettoyer et réinstaller
-rm -rf node_modules pnpm-lock.yaml
-pnpm install
+# Relancer le projet
+npm run dev
 ```
+
+**Note :** Le projet a été migré de `better-sqlite3` vers `sqlite3` et de `pnpm` vers `npm` pour résoudre les problèmes de compatibilité.
 
 ---
 

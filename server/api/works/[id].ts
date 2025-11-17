@@ -39,57 +39,6 @@ interface ReviewRow {
 	updated_at: string;
 }
 
-const getWorkStmt = db.prepare<[number], WorkDetailsRow>(`
-   SELECT
-	   w.id,
-	   w.title,
-	   w.original_title,
-	   w.status,
-	   w.cover_url,
-	   w.synopsis,
-	   w.created_by,
-	   w.created_at,
-	   w.updated_at,
-	   AVG(le.rating) AS avg_rating,
-	   COUNT(le.rating) AS rating_count,
-	   COUNT(le.id) AS entry_count
-   FROM works w
-   LEFT JOIN library_entries le ON le.work_id = w.id
-   WHERE w.id = ?
-   GROUP BY w.id
-`);
-
-const reviewStmt = db.prepare<[number], ReviewRow>(`
-   SELECT
-	   le.id,
-	   le.user_id,
-	   u.username,
-	   le.rating,
-	   le.review,
-	   le.status,
-	   le.progress,
-	   le.updated_at
-   FROM library_entries le
-   JOIN users u ON u.id = le.user_id
-   WHERE le.work_id = ?
-   ORDER BY le.updated_at DESC
-   LIMIT 10
-`);
-
-
-const updateStmt = db.prepare<[
-	string,
-	string | null,
-	string,
-	string | null,
-	string | null,
-	number
-]>(
-	"UPDATE works SET title = ?, original_title = ?, status = ?, cover_url = ?, synopsis = ?, updated_at = datetime('now') WHERE id = ?"
-);
-
-const deleteStmt = db.prepare<[number]>("DELETE FROM works WHERE id = ?");
-
 // Transforme une ligne SQL en objet JS plus lisible côté front
 function mapWork(row: WorkDetailsRow) {
    return {
@@ -118,14 +67,56 @@ export default defineEventHandler(async (event: H3Event) => {
 	   throw createError({ statusCode: 400, statusMessage: "Invalid id." });
    }
 
-   const work = getWorkStmt.get(id);
+   const work = await new Promise<WorkDetailsRow | undefined>((resolve) => {
+	   db.get(
+		   `SELECT
+			   w.id,
+			   w.title,
+			   w.original_title,
+			   w.status,
+			   w.cover_url,
+			   w.synopsis,
+			   w.created_by,
+			   w.created_at,
+			   w.updated_at,
+			   AVG(le.rating) AS avg_rating,
+			   COUNT(le.rating) AS rating_count,
+			   COUNT(le.id) AS entry_count
+		   FROM works w
+		   LEFT JOIN library_entries le ON le.work_id = w.id
+		   WHERE w.id = ?
+		   GROUP BY w.id`,
+		   [id],
+		   (err, row: WorkDetailsRow) => resolve(err || !row ? undefined : row)
+	   );
+   });
    if (!work) {
 	   throw createError({ statusCode: 404, statusMessage: "Work not found." });
    }
 
    // GET : détails de l'œuvre + 10 derniers avis
    if (method === "GET") {
-	   const reviews = reviewStmt.all(id).map((row: ReviewRow) => ({
+	   const reviews = await new Promise<ReviewRow[]>((resolve) => {
+		   db.all(
+			   `SELECT
+				   le.id,
+				   le.user_id,
+				   u.username,
+				   le.rating,
+				   le.review,
+				   le.status,
+				   le.progress,
+				   le.updated_at
+			   FROM library_entries le
+			   JOIN users u ON u.id = le.user_id
+			   WHERE le.work_id = ?
+			   ORDER BY le.updated_at DESC
+			   LIMIT 10`,
+			   [id],
+			   (err, rows: ReviewRow[]) => resolve(err || !rows ? [] : rows)
+		   );
+	   });
+	   const mappedReviews = reviews.map((row: ReviewRow) => ({
 		   id: row.id,
 		   userId: row.user_id,
 		   username: row.username,
@@ -138,13 +129,13 @@ export default defineEventHandler(async (event: H3Event) => {
 
 	   return {
 		   ...mapWork(work),
-		   reviews,
+		   reviews: mappedReviews,
 	   };
    }
 
    // PATCH/PUT : mise à jour de l'œuvre (admin uniquement)
    if (method === "PATCH" || method === "PUT") {
-	   requireAdmin(event);
+	   await requireAdmin(event);
 	   const body = await readBody<{
 		   title?: string;
 		   originalTitle?: string | null;
@@ -164,11 +155,33 @@ export default defineEventHandler(async (event: H3Event) => {
 	   const coverUrl = body?.coverUrl === undefined ? work.cover_url : body.coverUrl?.trim() || null;
 	   const synopsis = body?.synopsis === undefined ? work.synopsis : body.synopsis?.trim() || null;
 
-	   updateStmt.run(title, originalTitle, statusValue, coverUrl, synopsis, id);
-	   const updated = getWorkStmt.get(id);
+	   await new Promise<void>((resolve, reject) => {
+		   db.run(
+			   "UPDATE works SET title = ?, original_title = ?, status = ?, cover_url = ?, synopsis = ?, updated_at = datetime('now') WHERE id = ?",
+			   [title, originalTitle, statusValue, coverUrl, synopsis, id],
+			   (err) => err ? reject(err) : resolve()
+		   );
+	   });
+	   
+	   const updated = await new Promise<WorkDetailsRow | undefined>((resolve) => {
+		   db.get(
+			   `SELECT w.id, w.title, w.original_title, w.status, w.cover_url, w.synopsis, w.created_by, w.created_at, w.updated_at, AVG(le.rating) AS avg_rating, COUNT(le.rating) AS rating_count, COUNT(le.id) AS entry_count FROM works w LEFT JOIN library_entries le ON le.work_id = w.id WHERE w.id = ? GROUP BY w.id`,
+			   [id],
+			   (err, row: WorkDetailsRow) => resolve(err || !row ? undefined : row)
+		   );
+	   });
+	   
+	   const updatedReviews = await new Promise<ReviewRow[]>((resolve) => {
+		   db.all(
+			   `SELECT le.id, le.user_id, u.username, le.rating, le.review, le.status, le.progress, le.updated_at FROM library_entries le JOIN users u ON u.id = le.user_id WHERE le.work_id = ? ORDER BY le.updated_at DESC LIMIT 10`,
+			   [id],
+			   (err, rows: ReviewRow[]) => resolve(err || !rows ? [] : rows)
+		   );
+	   });
+	   
 	   return {
 		   ...mapWork(updated!),
-		   reviews: reviewStmt.all(id).map((row: ReviewRow) => ({
+		   reviews: updatedReviews.map((row: ReviewRow) => ({
 			   id: row.id,
 			   userId: row.user_id,
 			   username: row.username,
@@ -183,8 +196,10 @@ export default defineEventHandler(async (event: H3Event) => {
 
    // DELETE : suppression de l'œuvre (admin uniquement)
    if (method === "DELETE") {
-	   requireAdmin(event);
-	   deleteStmt.run(id);
+	   await requireAdmin(event);
+	   await new Promise<void>((resolve, reject) => {
+		   db.run("DELETE FROM works WHERE id = ?", [id], (err) => err ? reject(err) : resolve());
+	   });
 	   return { success: true };
    }
 

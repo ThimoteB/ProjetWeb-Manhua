@@ -24,40 +24,6 @@ interface LibraryRow {
 	username: string;
 }
 
-const getStmt = db.prepare<[
-	number
-], LibraryRow>(`
-	SELECT
-		le.id,
-		le.user_id,
-		le.work_id,
-		le.status,
-		le.progress,
-		le.rating,
-		le.review,
-		le.updated_at,
-		w.title AS work_title,
-		w.cover_url AS work_cover_url,
-		w.status AS work_status,
-		u.username
-	FROM library_entries le
-	JOIN works w ON w.id = le.work_id
-	JOIN users u ON u.id = le.user_id
-	WHERE le.id = ?
-`);
-
-const updateStmt = db.prepare<[
-	string,
-	number,
-	number | null,
-	string | null,
-	number
-]>(
-	"UPDATE library_entries SET status = ?, progress = ?, rating = ?, review = ?, updated_at = datetime('now') WHERE id = ?"
-);
-
-const deleteStmt = db.prepare<[number]>("DELETE FROM library_entries WHERE id = ?");
-
 const allowedStatuses = new Set([
 	"planning",
 	"reading",
@@ -94,18 +60,24 @@ export default defineEventHandler(async (event: H3Event) => {
 		throw createError({ statusCode: 400, statusMessage: "Invalid id." });
 	}
 
-	const entry = getStmt.get(id);
+	const entry = await new Promise<LibraryRow | undefined>((resolve) => {
+		db.get(
+			`SELECT le.id, le.user_id, le.work_id, le.status, le.progress, le.rating, le.review, le.updated_at, w.title AS work_title, w.cover_url AS work_cover_url, w.status AS work_status, u.username FROM library_entries le JOIN works w ON w.id = le.work_id JOIN users u ON u.id = le.user_id WHERE le.id = ?`,
+			[id],
+			(err, row: LibraryRow) => resolve(err || !row ? undefined : row)
+		);
+	});
 	if (!entry) {
 		throw createError({ statusCode: 404, statusMessage: "Library entry not found." });
 	}
 
 	if (method === "GET") {
-		assertOwnerOrAdmin(event, entry.user_id);
+		await assertOwnerOrAdmin(event, entry.user_id);
 		return mapRow(entry);
 	}
 
 	if (method === "PATCH" || method === "PUT") {
-		assertOwnerOrAdmin(event, entry.user_id);
+		await assertOwnerOrAdmin(event, entry.user_id);
 		const body = await readBody<{
 			status?: string;
 			progress?: number;
@@ -136,14 +108,32 @@ export default defineEventHandler(async (event: H3Event) => {
 		const review =
 			body?.review === undefined ? entry.review : body.review?.trim() || null;
 
-		updateStmt.run(status, progress, rating, review, id);
-		const updated = getStmt.get(id)!;
+		await new Promise<void>((resolve, reject) => {
+			db.run(
+				"UPDATE library_entries SET status = ?, progress = ?, rating = ?, review = ?, updated_at = datetime('now') WHERE id = ?",
+				[status, progress, rating, review, id],
+				(err) => err ? reject(err) : resolve()
+			);
+		});
+		
+		const updated = await new Promise<LibraryRow>((resolve, reject) => {
+			db.get(
+				`SELECT le.id, le.user_id, le.work_id, le.status, le.progress, le.rating, le.review, le.updated_at, w.title AS work_title, w.cover_url AS work_cover_url, w.status AS work_status, u.username FROM library_entries le JOIN works w ON w.id = le.work_id JOIN users u ON u.id = le.user_id WHERE le.id = ?`,
+				[id],
+				(err, row: LibraryRow) => {
+					if (err || !row) reject(err || new Error("Entry not found"));
+					else resolve(row);
+				}
+			);
+		});
 		return mapRow(updated);
 	}
 
 	if (method === "DELETE") {
-		assertOwnerOrAdmin(event, entry.user_id);
-		deleteStmt.run(id);
+		await assertOwnerOrAdmin(event, entry.user_id);
+		await new Promise<void>((resolve, reject) => {
+			db.run("DELETE FROM library_entries WHERE id = ?", [id], (err) => err ? reject(err) : resolve());
+		});
 		return { success: true };
 	}
 

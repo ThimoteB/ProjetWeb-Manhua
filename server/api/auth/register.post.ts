@@ -14,12 +14,6 @@ type RegisterPayload = {
 	password?: string;
 };
 
-const insertUserStmt = db.prepare<[
-	string,
-	string | null,
-	string
-]>("INSERT INTO users (username, email, is_admin, password_hash) VALUES (?, ?, 0, ?)");
-
 export default defineEventHandler(async (event) => {
 	const body = await readBody<RegisterPayload>(event);
 	const username = body?.username?.trim();
@@ -40,10 +34,18 @@ export default defineEventHandler(async (event) => {
 	const passwordHash = await bcrypt.hash(password, 10);
 
 	try {
-		const result = insertUserStmt.run(username, email, passwordHash);
-		const userId = Number(result.lastInsertRowid);
+		const userId = await new Promise<number>((resolve, reject) => {
+			db.run(
+				"INSERT INTO users (username, email, is_admin, password_hash) VALUES (?, ?, 0, ?)",
+				[username, email, passwordHash],
+				function(err) {
+					if (err) reject(err);
+					else resolve(this.lastID);
+				}
+			);
+		});
 		createSession(event, userId);
-		const user = getUserById(userId);
+		const user = await getUserById(userId);
 		return {
 			user,
 		};

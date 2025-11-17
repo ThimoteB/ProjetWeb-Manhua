@@ -24,63 +24,6 @@ interface LibraryRow {
 	work_synopsis: string | null;
 }
 
-const listStmt = db.prepare<[
-	{ userId: number }
-], LibraryRow>(`
-	SELECT
-		le.id,
-		le.user_id,
-		le.work_id,
-		le.status,
-		le.progress,
-		le.rating,
-		le.review,
-		le.updated_at,
-		w.title AS work_title,
-		w.cover_url AS work_cover_url,
-		w.status AS work_status,
-		w.synopsis AS work_synopsis
-	FROM library_entries le
-	JOIN works w ON w.id = le.work_id
-	WHERE le.user_id = :userId
-	ORDER BY le.updated_at DESC
-`);
-
-const insertStmt = db.prepare<[
-	number,
-	number,
-	string,
-	number,
-	number | null,
-	string | null
-]>(
-	"INSERT INTO library_entries (user_id, work_id, status, progress, rating, review) VALUES (?, ?, ?, ?, ?, ?)"
-);
-
-const getEntryStmt = db.prepare<[
-	number,
-	number
-], LibraryRow>(`
-	SELECT
-		le.id,
-		le.user_id,
-		le.work_id,
-		le.status,
-		le.progress,
-		le.rating,
-		le.review,
-		le.updated_at,
-		w.title AS work_title,
-		w.cover_url AS work_cover_url,
-		w.status AS work_status,
-		w.synopsis AS work_synopsis
-	FROM library_entries le
-	JOIN works w ON w.id = le.work_id
-	WHERE le.user_id = ? AND le.id = ?
-`);
-
-const workExistsStmt = db.prepare("SELECT id FROM works WHERE id = ?");
-
 const allowedStatuses = new Set([
 	"planning",
 	"reading",
@@ -113,7 +56,7 @@ export default defineEventHandler(async (event: H3Event) => {
 	const method = event.method;
 
 	if (method === "GET") {
-		const actor = requireUser(event);
+		const actor = await requireUser(event);
 		const query = getQuery(event);
 		let userId = actor.id;
 
@@ -129,11 +72,18 @@ export default defineEventHandler(async (event: H3Event) => {
 			}
 		}
 
-		return listStmt.all({ userId }).map(mapRow);
+		const rows = await new Promise<LibraryRow[]>((resolve) => {
+			db.all(
+				`SELECT le.id, le.user_id, le.work_id, le.status, le.progress, le.rating, le.review, le.updated_at, w.title AS work_title, w.cover_url AS work_cover_url, w.status AS work_status, w.synopsis AS work_synopsis FROM library_entries le JOIN works w ON w.id = le.work_id WHERE le.user_id = ? ORDER BY le.updated_at DESC`,
+				[userId],
+				(err, rows: LibraryRow[]) => resolve(err || !rows ? [] : rows)
+			);
+		});
+		return rows.map(mapRow);
 	}
 
 	if (method === "POST") {
-		const actor = requireUser(event);
+		const actor = await requireUser(event);
 		const body = await readBody<{
 			workId?: number;
 			status?: string;
@@ -147,7 +97,10 @@ export default defineEventHandler(async (event: H3Event) => {
 			throw createError({ statusCode: 400, statusMessage: "Invalid work id." });
 		}
 
-		if (!workExistsStmt.get(workId)) {
+		const workExists = await new Promise<any>((resolve) => {
+			db.get("SELECT id FROM works WHERE id = ?", [workId], (err, row) => resolve(err || !row ? null : row));
+		});
+		if (!workExists) {
 			throw createError({ statusCode: 404, statusMessage: "Work not found." });
 		}
 
@@ -169,15 +122,16 @@ export default defineEventHandler(async (event: H3Event) => {
 
 		let insertedId: number | null = null;
 		try {
-			const result = insertStmt.run(
-				actor.id,
-				workId,
-				status,
-				progress,
-				rating,
-				body?.review?.trim() || null
-			);
-			insertedId = Number(result.lastInsertRowid);
+			insertedId = await new Promise<number>((resolve, reject) => {
+				db.run(
+					"INSERT INTO library_entries (user_id, work_id, status, progress, rating, review) VALUES (?, ?, ?, ?, ?, ?)",
+					[actor.id, workId, status, progress, rating, body?.review?.trim() || null],
+					function(err) {
+						if (err) reject(err);
+						else resolve(this.lastID);
+					}
+				);
+			});
 		} catch (error: any) {
 			if (error?.code === "SQLITE_CONSTRAINT_UNIQUE") {
 				throw createError({ statusCode: 409, statusMessage: "Work already in library." });
@@ -185,7 +139,14 @@ export default defineEventHandler(async (event: H3Event) => {
 			throw error;
 		}
 
-		const entry = insertedId !== null ? getEntryStmt.get(actor.id, insertedId) : null;
+		const entry = await new Promise<LibraryRow | null>((resolve) => {
+			if (insertedId === null) return resolve(null);
+			db.get(
+				`SELECT le.id, le.user_id, le.work_id, le.status, le.progress, le.rating, le.review, le.updated_at, w.title AS work_title, w.cover_url AS work_cover_url, w.status AS work_status, w.synopsis AS work_synopsis FROM library_entries le JOIN works w ON w.id = le.work_id WHERE le.user_id = ? AND le.id = ?`,
+				[actor.id, insertedId],
+				(err, row: LibraryRow) => resolve(err || !row ? null : row)
+			);
+		});
 		return entry ? mapRow(entry) : null;
 	}
 

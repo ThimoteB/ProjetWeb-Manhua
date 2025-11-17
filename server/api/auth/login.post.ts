@@ -14,23 +14,6 @@ type LoginPayload = {
 	password?: string;
 };
 
-const getByIdentifierStmt = db.prepare<[
-	string,
-	string
-], {
-	id: number;
-	username: string;
-	email: string | null;
-	is_admin: number;
-	created_at: string;
-	password_hash: string | null;
-}>(
-	`SELECT id, username, email, is_admin, created_at, password_hash
-	 FROM users
-	 WHERE username = ? OR email = ?
-	 LIMIT 1`
-);
-
 export default defineEventHandler(async (event) => {
 	const body = await readBody<LoginPayload>(event);
 	const identifier = body?.identifier?.trim();
@@ -44,7 +27,17 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 400, statusMessage: "Password is required." });
 	}
 
-	const record = getByIdentifierStmt.get(identifier, identifier);
+	const record = await new Promise<any>((resolve) => {
+		db.get(
+			`SELECT id, username, email, is_admin, created_at, password_hash
+			 FROM users
+			 WHERE username = ? OR email = ?
+			 LIMIT 1`,
+			[identifier, identifier],
+			(err, row) => resolve(err || !row ? null : row)
+		);
+	});
+	
 	if (!record || !record.password_hash) {
 		throw createError({ statusCode: 401, statusMessage: "Invalid credentials." });
 	}
@@ -56,7 +49,7 @@ export default defineEventHandler(async (event) => {
 
 	createSession(event, record.id);
 
-	const user = getUserById(record.id);
+	const user = await getUserById(record.id);
 	return {
 		user,
 	};

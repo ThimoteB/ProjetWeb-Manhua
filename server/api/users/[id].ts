@@ -22,23 +22,6 @@ type DbUser = {
 	created_at: string;
 };
 
-const getStmt = db.prepare<[number], DbUser>(
-	"SELECT id, username, email, is_admin, created_at FROM users WHERE id = ?"
-);
-
-const updateStmt = db.prepare<[
-	string | null,
-	number,
-	number
-]>("UPDATE users SET email = ?, is_admin = ? WHERE id = ?");
-
-const updatePasswordStmt = db.prepare<[
-	string,
-	number
-]>("UPDATE users SET password_hash = ? WHERE id = ?");
-
-const deleteStmt = db.prepare<[number]>("DELETE FROM users WHERE id = ?");
-
 function mapUser(row: DbUser) {
 	return {
 		id: row.id,
@@ -57,7 +40,13 @@ export default defineEventHandler(async (event: H3Event) => {
 		throw createError({ statusCode: 400, statusMessage: "Invalid id." });
 	}
 
-	const existing = getStmt.get(id);
+	const existing = await new Promise<DbUser | undefined>((resolve) => {
+		db.get(
+			"SELECT id, username, email, is_admin, created_at FROM users WHERE id = ?",
+			[id],
+			(err, row: DbUser) => resolve(err || !row ? undefined : row)
+		);
+	});
 	if (!existing) {
 		throw createError({ statusCode: 404, statusMessage: "User not found." });
 	}
@@ -77,11 +66,11 @@ export default defineEventHandler(async (event: H3Event) => {
 		let nextIsAdmin = existing.is_admin;
 
 		if (body?.isAdmin !== undefined) {
-			requireAdmin(event);
+			await requireAdmin(event);
 			nextIsAdmin = body.isAdmin ? 1 : 0;
 		}
 
-		assertOwnerOrAdmin(event, existing.id);
+		await assertOwnerOrAdmin(event, existing.id);
 
 		if (body?.password !== undefined) {
 			const trimmed = body.password?.trim() ?? "";
@@ -89,17 +78,26 @@ export default defineEventHandler(async (event: H3Event) => {
 				throw createError({ statusCode: 400, statusMessage: "Password must be at least 8 characters." });
 			}
 			const passwordHash = await bcrypt.hash(trimmed, 10);
-			updatePasswordStmt.run(passwordHash, id);
+			await new Promise<void>((resolve, reject) => {
+				db.run("UPDATE users SET password_hash = ? WHERE id = ?", [passwordHash, id], (err) => err ? reject(err) : resolve());
+			});
 		}
 
-		updateStmt.run(nextEmail, nextIsAdmin, id);
+		await new Promise<void>((resolve, reject) => {
+			db.run("UPDATE users SET email = ?, is_admin = ? WHERE id = ?", [nextEmail, nextIsAdmin, id], (err) => err ? reject(err) : resolve());
+		});
 		return mapUser({ ...existing, email: nextEmail, is_admin: nextIsAdmin });
 	}
 
 	if (method === "DELETE") {
-		requireAdmin(event);
-		const result = deleteStmt.run(id);
-		if (result.changes === 0) {
+		await requireAdmin(event);
+		const changes = await new Promise<number>((resolve, reject) => {
+			db.run("DELETE FROM users WHERE id = ?", [id], function(err) {
+				if (err) reject(err);
+				else resolve(this.changes);
+			});
+		});
+		if (changes === 0) {
 			throw createError({ statusCode: 500, statusMessage: "Failed to delete user." });
 		}
 		return { success: true };

@@ -29,49 +29,6 @@ interface WorkRow {
 	entry_count: number;
 }
 
-const listStmt = db.prepare<[
-   { search: string; pattern: string; status?: string; limit: number; offset: number }
-], WorkRow>(`
-   SELECT
-	   w.id,
-	   w.title,
-	   w.original_title,
-	   w.status,
-	   w.cover_url,
-	   w.synopsis,
-	   w.created_by,
-	   w.created_at,
-	   w.updated_at,
-	   AVG(le.rating) AS avg_rating,
-	   COUNT(le.rating) AS rating_count,
-	   COUNT(le.id) AS entry_count
-   FROM works w
-   LEFT JOIN library_entries le ON le.work_id = w.id
-   WHERE (:search = '' OR w.title LIKE :pattern OR w.original_title LIKE :pattern)
-	   AND (:status IS NULL OR w.status = :status)
-   GROUP BY w.id
-   ORDER BY w.title COLLATE NOCASE
-   LIMIT :limit OFFSET :offset
-`);
-const countStmt = db.prepare<[
-	{ search: string; pattern: string; status?: string }
-], { total: number }>(`
-	SELECT COUNT(*) AS total
-	FROM works
-	WHERE (:search = '' OR title LIKE :pattern OR original_title LIKE :pattern)
-		 AND (:status IS NULL OR status = :status)
-`);
-const insertStmt = db.prepare<[
-	string,
-	string | null,
-	string,
-	string | null,
-	string | null,
-	number | null
-]>(
-	"INSERT INTO works (title, original_title, status, cover_url, synopsis, created_by) VALUES (?, ?, ?, ?, ?, ?)"
-);
-
 export default defineEventHandler(async (event: H3Event) => {
    const method = event.method;
 
@@ -91,16 +48,46 @@ export default defineEventHandler(async (event: H3Event) => {
 	   const page = Math.max(parseInt(query.page as string, 10) || 1, 1);
 	   const offset = (page - 1) * limit;
 
-	   const params = {
-		   search,
-		   pattern: search ? `%${search}%` : "",
-		   status,
-		   limit,
-		   offset,
-	   };
-
-	   const rows = listStmt.all(params);
-	   const { total } = countStmt.get(params) ?? { total: 0 };
+	   const pattern = search ? `%${search}%` : "";
+	   
+	   const rows = await new Promise<WorkRow[]>((resolve) => {
+		   const whereClause = [];
+		   const queryParams: any[] = [];
+		   
+		   if (search) {
+			   whereClause.push("(w.title LIKE ? OR w.original_title LIKE ?)");
+			   queryParams.push(pattern, pattern);
+		   }
+		   if (status) {
+			   whereClause.push("w.status = ?");
+			   queryParams.push(status);
+		   }
+		   
+		   const whereSQL = whereClause.length > 0 ? `WHERE ${whereClause.join(" AND ")}` : "";
+		   const sql = `SELECT w.id, w.title, w.original_title, w.status, w.cover_url, w.synopsis, w.created_by, w.created_at, w.updated_at, AVG(le.rating) AS avg_rating, COUNT(le.rating) AS rating_count, COUNT(le.id) AS entry_count FROM works w LEFT JOIN library_entries le ON le.work_id = w.id ${whereSQL} GROUP BY w.id ORDER BY w.title COLLATE NOCASE LIMIT ? OFFSET ?`;
+		   queryParams.push(limit, offset);
+		   
+		   db.all(sql, queryParams, (err, rows: WorkRow[]) => resolve(err || !rows ? [] : rows));
+	   });
+	   
+	   const { total } = await new Promise<{ total: number }>((resolve) => {
+		   const whereClause = [];
+		   const queryParams: any[] = [];
+		   
+		   if (search) {
+			   whereClause.push("(title LIKE ? OR original_title LIKE ?)");
+			   queryParams.push(pattern, pattern);
+		   }
+		   if (status) {
+			   whereClause.push("status = ?");
+			   queryParams.push(status);
+		   }
+		   
+		   const whereSQL = whereClause.length > 0 ? `WHERE ${whereClause.join(" AND ")}` : "";
+		   const sql = `SELECT COUNT(*) AS total FROM works ${whereSQL}`;
+		   
+		   db.get(sql, queryParams, (err, row: {total: number}) => resolve(err || !row ? {total: 0} : row));
+	   });
 
 	   return {
 		   data: rows.map((row: WorkRow) => ({
@@ -133,7 +120,7 @@ export default defineEventHandler(async (event: H3Event) => {
 	   - Vérifie la validité des champs (titre obligatoire, statut autorisé)
 	   - Si admin, possibilité de choisir le créateur
 	   */
-	   const requester = requireUser(event);
+	   const requester = await requireUser(event);
 	   const body = await readBody<{
 		   title?: string;
 		   originalTitle?: string;
@@ -158,7 +145,9 @@ export default defineEventHandler(async (event: H3Event) => {
 		   if (body.createdBy === null) {
 			   createdBy = null;
 		   } else {
-			   const userExists = db.prepare("SELECT id FROM users WHERE id = ?").get(body.createdBy);
+			   const userExists = await new Promise<any>((resolve) => {
+				   db.get("SELECT id FROM users WHERE id = ?", [body.createdBy], (err, row) => resolve(err || !row ? null : row));
+			   });
 			   if (!userExists) {
 				   throw createError({ statusCode: 404, statusMessage: "Creator user not found." });
 			   }
@@ -166,21 +155,24 @@ export default defineEventHandler(async (event: H3Event) => {
 		   }
 	   }
 
-	   const result = insertStmt.run(
-		   title,
-		   body?.originalTitle?.trim() || null,
-		   statusValue,
-		   body?.coverUrl?.trim() || null,
-		   body?.synopsis?.trim() || null,
-		   createdBy
-	   );
+	   const insertedId = await new Promise<number>((resolve, reject) => {
+		   db.run(
+			   "INSERT INTO works (title, original_title, status, cover_url, synopsis, created_by) VALUES (?, ?, ?, ?, ?, ?)",
+			   [title, body?.originalTitle?.trim() || null, statusValue, body?.coverUrl?.trim() || null, body?.synopsis?.trim() || null, createdBy],
+			   function(err) {
+				   if (err) reject(err);
+				   else resolve(this.lastID);
+			   }
+		   );
+	   });
 
-	   const insertedId = Number(result.lastInsertRowid);
-	   const createdWork = db.prepare<[
-		   number
-	   ], WorkRow>(
-		   `SELECT w.*, NULL AS avg_rating, 0 AS rating_count, 0 AS entry_count FROM works w WHERE w.id = ?`
-	   ).get(insertedId);
+	   const createdWork = await new Promise<WorkRow | undefined>((resolve) => {
+		   db.get(
+			   `SELECT w.*, NULL AS avg_rating, 0 AS rating_count, 0 AS entry_count FROM works w WHERE w.id = ?`,
+			   [insertedId],
+			   (err, row: WorkRow) => resolve(err || !row ? undefined : row)
+		   );
+	   });
 
 	   return {
 		   id: insertedId,

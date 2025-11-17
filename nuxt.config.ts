@@ -62,14 +62,14 @@ export default defineNuxtConfig({
 		typeCheck: false, 
 	},
 
-	// Configuration Nitro pour Docker + better-sqlite3
+	// Configuration Nitro pour sqlite3
 	nitro: {
-		experimental: {
-			wasm: true,
-		},
 		rollupConfig: {
-			external: ['better-sqlite3'],
+			external: ['sqlite3'],
 		},
-		moduleSideEffects: ['better-sqlite3'],
 	},
 });
+function defineNuxtConfig<T extends Record<string, any>>(config: T): T {
+	return config;
+}
+

@@ -30,33 +30,6 @@ type PublicUser = {
 	createdAt: string;
 };
 
-const baseSelect = `
-	SELECT id, username, email, is_admin, created_at
-	FROM users
-	WHERE (:search = '' OR username LIKE :pattern OR email LIKE :pattern)
-	ORDER BY created_at DESC
-	LIMIT :limit OFFSET :offset
-`;
-
-const listStmt = db.prepare<[
-	{ search: string; pattern: string; limit: number; offset: number }
-], DbUser>(baseSelect);
-
-const countStmt = db.prepare<[
-	{ search: string; pattern: string }
-], { total: number }>(`
-	SELECT COUNT(*) AS total
-	FROM users
-	WHERE (:search = '' OR username LIKE :pattern OR email LIKE :pattern)
-`);
-
-const insertStmt = db.prepare<[
-	string,
-	string | null,
-	number,
-	string
-]>("INSERT INTO users (username, email, is_admin, password_hash) VALUES (?, ?, ?, ?)");
-
 function mapUser(row: DbUser): PublicUser {
 	return {
 		id: row.id,
@@ -77,18 +50,28 @@ export default defineEventHandler(async (event: H3Event) => {
 		const page = Math.max(parseInt(query.page as string, 10) || 1, 1);
 		const offset = (page - 1) * limit;
 
-		const params = {
-			search,
-			pattern: search ? `%${search}%` : "",
-			limit,
-			offset,
-		};
-
-		const users = listStmt.all(params).map(mapUser);
-		const { total } = countStmt.get(params) ?? { total: 0 };
+		const pattern = search ? `%${search}%` : "";
+		
+		const users = await new Promise<DbUser[]>((resolve) => {
+			const whereClause = search ? "WHERE username LIKE ? OR email LIKE ?" : "";
+			const queryParams = search ? [pattern, pattern, limit, offset] : [limit, offset];
+			const sql = `SELECT id, username, email, is_admin, created_at FROM users ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+			
+			db.all(sql, queryParams, (err, rows: DbUser[]) => resolve(err || !rows ? [] : rows));
+		});
+		
+		const { total } = await new Promise<{ total: number }>((resolve) => {
+			const whereClause = search ? "WHERE username LIKE ? OR email LIKE ?" : "";
+			const queryParams = search ? [pattern, pattern] : [];
+			const sql = `SELECT COUNT(*) AS total FROM users ${whereClause}`;
+			
+			db.get(sql, queryParams, (err, row: {total: number}) => resolve(err || !row ? {total: 0} : row));
+		});
+		
+		const mappedUsers = users.map(mapUser);
 
 		return {
-			data: users,
+			data: mappedUsers,
 			pagination: {
 				page,
 				limit,
@@ -98,7 +81,7 @@ export default defineEventHandler(async (event: H3Event) => {
 	}
 
 	if (method === "POST") {
-		requireAdmin(event);
+		await requireAdmin(event);
 		const body = await readBody<{
 			username?: string;
 			email?: string;
@@ -120,20 +103,24 @@ export default defineEventHandler(async (event: H3Event) => {
 
 		const passwordHash = await bcrypt.hash(password, 10);
 
-		const requester = getCurrentUser(event);
+		const requester = await getCurrentUser(event);
 		const wantsAdmin = body?.isAdmin === true;
 		const isAdminFlag = wantsAdmin && requester?.is_admin === 1 ? 1 : 0;
 
 		try {
-			const result = insertStmt.run(
-				username,
-				body?.email?.trim() || null,
-				isAdminFlag,
-				passwordHash
-			);
+			const insertedId = await new Promise<number>((resolve, reject) => {
+				db.run(
+					"INSERT INTO users (username, email, is_admin, password_hash) VALUES (?, ?, ?, ?)",
+					[username, body?.email?.trim() || null, isAdminFlag, passwordHash],
+					function(err) {
+						if (err) reject(err);
+						else resolve(this.lastID);
+					}
+				);
+			});
 
 			return mapUser({
-				id: Number(result.lastInsertRowid),
+				id: insertedId,
 				username,
 				email: body?.email?.trim() || null,
 				is_admin: isAdminFlag,

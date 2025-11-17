@@ -31,35 +31,6 @@ type DbUserRow = DbUser & {
 const SESSION_COOKIE = "manhua_session";
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 7; // 1 semaine
 
-/*
-Préparation des différents statements SQL utiles 
-Plus tard il suffira de les appeler avec .get() / .run() / .all() avec des datas
-*/
-
-const getUserByIdStmt = db.prepare<[number], DbUser>(
-	"SELECT id, username, email, is_admin, created_at FROM users WHERE id = ?"
-);
-
-const getUserBySessionStmt = db.prepare<[string], DbUserRow>(
-	`SELECT id, username, email, is_admin, created_at, session_token, session_expires_at
-	 FROM users
-	 WHERE session_token = ?
-	   AND session_expires_at IS NOT NULL
-	   AND session_expires_at > datetime('now')`
-);
-
-const updateSessionStmt = db.prepare<[string, string, number]>(
-	"UPDATE users SET session_token = ?, session_expires_at = ? WHERE id = ?"
-);
-
-const clearSessionByIdStmt = db.prepare<[number]>(
-	"UPDATE users SET session_token = NULL, session_expires_at = NULL WHERE id = ?"
-);
-
-const clearSessionByTokenStmt = db.prepare<[string]>(
-	"UPDATE users SET session_token = NULL, session_expires_at = NULL WHERE session_token = ?"
-);
-
 // Retire les champs sensibles (token, expiration) pour exposer un utilisateur côté front
 function sanitizeUser(row: DbUserRow): DbUser {
 	return {
@@ -83,11 +54,24 @@ function getSessionToken(event: H3Event): string | null {
 	return headerValue ?? null;
 }
 
-// Retourne l'utilisateur courant si le token de session est valide, sinon null
-export function getCurrentUser(event: H3Event): DbUser | null {
+// Retourne l'utilisateur courant si le token de session est valide, sinon null (asynchrone)
+export async function getCurrentUser(event: H3Event): Promise<DbUser | null> {
 	const token = getSessionToken(event);
 	if (token) {
-		const sessionUser = getUserBySessionStmt.get(token);
+		const sessionUser = await new Promise<DbUserRow | undefined>((resolve) => {
+			db.get(
+				`SELECT id, username, email, is_admin, created_at, session_token, session_expires_at
+				 FROM users
+				 WHERE session_token = ?
+				   AND session_expires_at IS NOT NULL
+				   AND session_expires_at > datetime('now')`,
+				[token],
+				(err, row: DbUserRow) => {
+					resolve(err || !row ? undefined : row);
+				}
+			);
+		});
+		
 		if (sessionUser) {
 			return sanitizeUser(sessionUser);
 		}
@@ -97,7 +81,15 @@ export function getCurrentUser(event: H3Event): DbUser | null {
 	if (header) {
 		const id = Number(Array.isArray(header) ? header[0] : header);
 		if (Number.isInteger(id)) {
-			const user = getUserByIdStmt.get(id);
+			const user = await new Promise<DbUser | undefined>((resolve) => {
+				db.get(
+					"SELECT id, username, email, is_admin, created_at FROM users WHERE id = ?",
+					[id],
+					(err, row: DbUser) => {
+						resolve(err || !row ? undefined : row);
+					}
+				);
+			});
 			if (user) return user;
 		}
 	}
@@ -106,8 +98,8 @@ export function getCurrentUser(event: H3Event): DbUser | null {
 }
 
 // Lance une erreur si aucun utilisateur n'est authentifié (utilisé pour sécuriser les endpoints)
-export function requireUser(event: H3Event): DbUser {
-	const user = getCurrentUser(event);
+export async function requireUser(event: H3Event): Promise<DbUser> {
+	const user = await getCurrentUser(event);
 	if (!user) {
 		throw createError({ statusCode: 401, statusMessage: "Authentication required" });
 	}
@@ -115,8 +107,8 @@ export function requireUser(event: H3Event): DbUser {
 }
 
 // Lance une erreur si l'utilisateur n'est pas admin (sécurise les routes admin)
-export function requireAdmin(event: H3Event): DbUser {
-	const user = requireUser(event);
+export async function requireAdmin(event: H3Event): Promise<DbUser> {
+	const user = await requireUser(event);
 	if (user.is_admin !== 1) {
 		throw createError({ statusCode: 403, statusMessage: "Admin privileges required" });
 	}
@@ -124,8 +116,8 @@ export function requireAdmin(event: H3Event): DbUser {
 }
 
 // Vérifie que l'utilisateur est soit le propriétaire de la ressource, soit admin
-export function assertOwnerOrAdmin(event: H3Event, ownerId: number): DbUser {
-	const user = requireUser(event);
+export async function assertOwnerOrAdmin(event: H3Event, ownerId: number): Promise<DbUser> {
+	const user = await requireUser(event);
 	if (user.id !== ownerId && user.is_admin !== 1) {
 		throw createError({ statusCode: 403, statusMessage: "Insufficient permissions" });
 	}
@@ -136,7 +128,7 @@ export function assertOwnerOrAdmin(event: H3Event, ownerId: number): DbUser {
 export function createSession(event: H3Event, userId: number) {
 	const token = randomBytes(32).toString("hex");
 	const expiresAt = new Date(Date.now() + SESSION_DURATION_MS).toISOString();
-	updateSessionStmt.run(token, expiresAt, userId);
+	db.run("UPDATE users SET session_token = ?, session_expires_at = ? WHERE id = ?", [token, expiresAt, userId]);
 	setCookie(event, SESSION_COOKIE, token, {
 		httpOnly: true,
 		secure: process.env.NODE_ENV === "production",
@@ -151,14 +143,22 @@ export function createSession(event: H3Event, userId: number) {
 export function destroySession(event: H3Event, userId?: number) {
 	const token = getSessionToken(event);
 	if (token) {
-		clearSessionByTokenStmt.run(token);
+		db.run("UPDATE users SET session_token = NULL, session_expires_at = NULL WHERE session_token = ?", [token]);
 	}
 	if (userId) {
-		clearSessionByIdStmt.run(userId);
+		db.run("UPDATE users SET session_token = NULL, session_expires_at = NULL WHERE id = ?", [userId]);
 	}
 	deleteCookie(event, SESSION_COOKIE, { path: "/" });
 }
 
-export function getUserById(id: number): DbUser | null {
-	return getUserByIdStmt.get(id) ?? null;
+export async function getUserById(id: number): Promise<DbUser | null> {
+	return new Promise<DbUser | null>((resolve) => {
+		db.get(
+			"SELECT id, username, email, is_admin, created_at FROM users WHERE id = ?",
+			[id],
+			(err, row: DbUser) => {
+				resolve(err || !row ? null : row);
+			}
+		);
+	});
 }
