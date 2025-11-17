@@ -1,17 +1,14 @@
 FROM node:22
-RUN apt-get update && apt-get install -y sqlite3
+RUN apt-get update && apt-get install -y sqlite3 python3 make g++
 WORKDIR /app
 
-RUN npm i -g pnpm
-
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
-RUN node -e 'new require("better-sqlite3")(":memory:")'
+COPY package.json package-lock.json ./
+RUN npm ci
 
 COPY . .
 RUN rm -rf .nuxt
-RUN pnpm run postinstall
-RUN pnpm run build
+RUN npm run postinstall
+RUN npm run build
 
 RUN mkdir -p /app/server/data
 EXPOSE 3000
