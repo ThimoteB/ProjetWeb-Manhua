@@ -1,8 +1,8 @@
 <!--
 works.vue
-Page catalogue des œuvres :
+Page catalogue des oeuvres :
 - Recherche, filtrage par statut, pagination
-- Ajout et suppression d'œuvres (admin)
+- Ajout et suppression d'oeuvres (admin)
 - Ajout/retrait dans la bibliothèque utilisateur
 -->
 <template>
@@ -218,8 +218,8 @@ Page catalogue des œuvres :
 
 <script setup lang="ts">
 // Script principal de la page catalogue :
-// - Gère la récupération, le filtrage et la pagination des œuvres
-// - Permet l'ajout/suppression d'œuvres (admin)
+// - Gère la récupération, le filtrage et la pagination des oeuvres
+// - Permet l'ajout/suppression d'oeuvres (admin)
 // - Gère l'ajout/retrait dans la bibliothèque utilisateur
 import { computed, reactive, ref } from "vue";
 import { useAppSession } from "~/composables/useAppSession";
@@ -230,7 +230,7 @@ const currentUser = computed(() => session.user.value);
 const canCreateWork = computed(() => Boolean(currentUser.value));
 const canModerateWork = computed(() => currentUser.value?.is_admin === 1);
 
-// Récupération de la bibliothèque de l'utilisateur pour savoir quelles œuvres sont déjà ajoutées
+// Récupération de la bibliothèque de l'utilisateur pour savoir quelles oeuvres sont déjà ajoutées
 const { data: libraryData, refresh: refreshLibrary } = await useLazyAsyncData<{ workId: number; id: number }[]>(
 	"user-library-works",
 	async () => {
@@ -380,7 +380,7 @@ const confirmRemoveFromLibrary = async (work: WorkItem) => {
 			credentials: "include",
 		});
 		
-		showToast("success", "Œuvre retirée de la bibliothèque");
+		showToast("success", "oeuvre retirée de la bibliothèque");
 		refreshLibrary(); // Actualiser la liste de la bibliothèque
 	} catch (error: any) {
 		showToast("error", t("messages.unexpectedError"));

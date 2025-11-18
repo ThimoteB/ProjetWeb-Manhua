@@ -26,7 +26,7 @@
 - S'authentifier ou s'inscrire via la page d'accueil.
 - Naviguer via le menu principal.
 - Changer de langue ou de thème via les boutons en haut à droite.
-- Ajouter/retirer des œuvres à sa bibliothèque depuis le catalogue.
+- Ajouter/retirer des oeuvres à sa bibliothèque depuis le catalogue.
 - Depuis sa collection, modifier une entrée (note, avis, statut).
 - Accéder à la gestion admin si connecté en tant qu’admin.
 

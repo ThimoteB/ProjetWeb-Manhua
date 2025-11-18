@@ -1,10 +1,10 @@
 
 /*
 [id].ts
-Ce fichier gère les opérations sur une œuvre individuelle (GET, PATCH/PUT, DELETE).
-L'identifiant de l'œuvre est récupéré automatiquement via le nom du fichier ([id].ts) grâce au système de routing de Nuxt/Nitro :
+Ce fichier gère les opérations sur une oeuvre individuelle (GET, PATCH/PUT, DELETE).
+L'identifiant de l'oeuvre est récupéré automatiquement via le nom du fichier ([id].ts) grâce au système de routing de Nuxt/Nitro :
 - L'URL /api/works/42 va injecter 42 dans event.context.params.id
-On utilise des statements SQL pour récupérer, mettre à jour ou supprimer l'œuvre, ainsi que pour lister les 10 derniers avis.
+On utilise des statements SQL pour récupérer, mettre à jour ou supprimer l'oeuvre, ainsi que pour lister les 10 derniers avis.
 Certaines opérations nécessitent d'être admin.
 */
 
@@ -60,7 +60,7 @@ function mapWork(row: WorkDetailsRow) {
 
 export default defineEventHandler(async (event: H3Event) => {
    const method = event.method;
-   // L'id de l'œuvre est injecté automatiquement par le nom du fichier ([id].ts)
+   // L'id de l'oeuvre est injecté automatiquement par le nom du fichier ([id].ts)
    const id = Number(event.context.params?.id);
 
    if (!Number.isInteger(id)) {
@@ -94,7 +94,7 @@ export default defineEventHandler(async (event: H3Event) => {
 	   throw createError({ statusCode: 404, statusMessage: "Work not found." });
    }
 
-   // GET : détails de l'œuvre + 10 derniers avis
+   // GET : détails de l'oeuvre + 10 derniers avis
    if (method === "GET") {
 	   const reviews = await new Promise<ReviewRow[]>((resolve) => {
 		   db.all(
@@ -133,7 +133,7 @@ export default defineEventHandler(async (event: H3Event) => {
 	   };
    }
 
-   // PATCH/PUT : mise à jour de l'œuvre (admin uniquement)
+   // PATCH/PUT : mise à jour de l'oeuvre (admin uniquement)
    if (method === "PATCH" || method === "PUT") {
 	   await requireAdmin(event);
 	   const body = await readBody<{
@@ -194,7 +194,7 @@ export default defineEventHandler(async (event: H3Event) => {
 	   };
    }
 
-   // DELETE : suppression de l'œuvre (admin uniquement)
+   // DELETE : suppression de l'oeuvre (admin uniquement)
    if (method === "DELETE") {
 	   await requireAdmin(event);
 	   await new Promise<void>((resolve, reject) => {

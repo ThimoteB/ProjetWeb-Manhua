@@ -1,12 +1,12 @@
 
 /*
 index.ts
-Ce fichier gère les opérations principales sur la liste des œuvres (works) :
+Ce fichier gère les opérations principales sur la liste des oeuvres (works) :
 - Récupération paginée et filtrée (GET)
-- Création d'une nouvelle œuvre (POST)
+- Création d'une nouvelle oeuvre (POST)
 Il utilise des requêtes SQL préparées pour la recherche, le comptage et l'insertion.
 Les paramètres de recherche (titre, statut, pagination) sont extraits de la query string.
-L'utilisateur doit être authentifié pour créer une œuvre.
+L'utilisateur doit être authentifié pour créer une oeuvre.
 */
 
 import { createError, defineEventHandler, getQuery, readBody } from "h3";
@@ -32,7 +32,7 @@ interface WorkRow {
 export default defineEventHandler(async (event: H3Event) => {
    const method = event.method;
 
-   // GET : liste paginée et filtrée des œuvres
+   // GET : liste paginée et filtrée des oeuvres
    if (method === "GET") {
 	   /*
 	   Recherche et pagination :
@@ -112,13 +112,12 @@ export default defineEventHandler(async (event: H3Event) => {
 	   };
    }
 
-   // POST : création d'une nouvelle œuvre
+   // POST : création d'une nouvelle oeuvre
    if (method === "POST") {
 	   /*
-	   Création d'une œuvre :
+	   Création d'une oeuvre :
 	   - Vérifie que l'utilisateur est authentifié
 	   - Vérifie la validité des champs (titre obligatoire, statut autorisé)
-	   - Si admin, possibilité de choisir le créateur
 	   */
 	   const requester = await requireUser(event);
 	   const body = await readBody<{

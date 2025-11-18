@@ -1,9 +1,9 @@
 <!--
 index.vue
 Page d'accueil du site :
-- Affiche le titre, le sous-titre, les statistiques (œuvres, bibliothèque, utilisateurs)
+- Affiche le titre, le sous-titre, les statistiques (oeuvres, bibliothèque, utilisateurs)
 - Propose l'accès au catalogue, à la bibliothèque, et à l'authentification (login/register)
-- Met en avant les dernières œuvres ajoutées
+- Met en avant les dernières oeuvres ajoutées
 -->
 <template>
 	<div>
@@ -187,7 +187,7 @@ Page d'accueil du site :
 <script setup lang="ts">
 // Script principal de la page d'accueil :
 // - Gère l'affichage des statistiques, la connexion et l'inscription
-// - Permet le changement d'onglet et la récupération des œuvres mises en avant
+// - Permet le changement d'onglet et la récupération des oeuvres mises en avant
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useAppSession } from "~/composables/useAppSession";
 

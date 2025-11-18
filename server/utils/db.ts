@@ -12,11 +12,9 @@ import { dirname, join } from "node:path";
 import dotenv from "dotenv";
 
 const dbPath = join(process.cwd(), "server", "data", "manhua.sqlite");
-// Chemin vers la base SQLite locale
 const dir = dirname(dbPath);
 
 if (!existsSync(dir)) {
-	// Crée le dossier data si besoin
 	mkdirSync(dir, { recursive: true });
 }
 
@@ -24,11 +22,9 @@ dotenv.config();
 
 const db = new sqlite3.Database(dbPath);
 
-// Active le mode WAL pour la robustesse et les clés étrangères
 db.run("PRAGMA journal_mode = WAL");
 db.run("PRAGMA foreign_keys = ON");
 
-// Initialisation synchrone des tables
 db.serialize(() => {
 	db.exec(`
 CREATE TABLE IF NOT EXISTS users (

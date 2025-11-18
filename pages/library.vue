@@ -1,7 +1,7 @@
 <!--
 library.vue
 Page bibliothèque de l'utilisateur :
-- Affiche les œuvres suivies
+- Affiche les oeuvres suivies
 - Permet d'éditer, supprimer ou ajouter des entrées
 - Gestion des statuts, notes et avis
 -->
@@ -155,7 +155,7 @@ Page bibliothèque de l'utilisateur :
 <script setup lang="ts">
 // Script principal de la page bibliothèque :
 // - Gère l'affichage, l'édition et la suppression des entrées de la bibliothèque
-// - Permet la gestion des statuts, notes et avis sur les œuvres suivies
+// - Permet la gestion des statuts, notes et avis sur les oeuvres suivies
 import { computed, reactive, ref } from "vue";
 import { useAppSession } from "~/composables/useAppSession";
 

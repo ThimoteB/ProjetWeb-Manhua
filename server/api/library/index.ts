@@ -1,7 +1,7 @@
 /*
 index.ts
-Endpoint GET pour récupérer la bibliothèque d'un utilisateur (liste des œuvres suivies).
-Endpoint POST pour ajouter une œuvre à la bibliothèque.
+Endpoint GET pour récupérer la bibliothèque d'un utilisateur (liste des oeuvres suivies).
+Endpoint POST pour ajouter une oeuvre à la bibliothèque.
 Vérifie les droits d'accès (admin ou propriétaire).
 */
 import { createError, defineEventHandler, getQuery, readBody } from "h3";
